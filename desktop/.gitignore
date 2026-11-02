@@ -1,0 +1,14 @@
+node_modules/
+dist/
+bin/*.exe
+*.log
+android/.gradle/
+android/**/build/
+android/.signing/
+.build-tools/
+android/local.properties
+/qa-*.png
+/qa-*.jpg
+/qa-*.gif
+/qa-*.webm
+/qa-*.mp4

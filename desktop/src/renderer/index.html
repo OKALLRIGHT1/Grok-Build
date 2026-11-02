@@ -1,0 +1,861 @@
+<!doctype html>
+<html lang="zh-CN" data-conversation-layout="welcome">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'none'"
+    />
+    <title>Grok Build</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="workspace.css" />
+    <link rel="stylesheet" href="sidebar.css" />
+    <link rel="stylesheet" href="themes.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside id="desktop-sidebar" class="sidebar glass-surface">
+        <nav class="sidebar-rail" aria-label="功能导航">
+          <button id="rail-projects" class="rail-button active" type="button" title="项目与对话" aria-label="项目与对话" aria-controls="sidebar-body" aria-expanded="true"><i data-lucide="house"></i></button>
+          <button id="rail-work-status" class="rail-button" type="button" data-sidebar-action="work-button" title="查看正在运行的任务" aria-label="查看正在运行的任务" hidden><i data-lucide="activity"></i></button>
+          <div class="rail-bottom">
+            <button id="sidebar-menu-button" class="rail-button" type="button" title="工具与设置" aria-label="工具与设置" popovertarget="sidebar-more" aria-controls="sidebar-more" aria-expanded="false"><i data-lucide="settings"></i></button>
+          </div>
+        </nav>
+        <div id="sidebar-body" class="sidebar-body">
+        <div class="brand-row">
+          <div class="brand-copy">
+            <div class="brand-name">Grok Build</div>
+            <div class="brand-platform">Windows <span id="client-version">v0.1.17</span></div>
+          </div>
+          <button id="sessions-button" class="icon-button small" type="button" title="搜索与历史 (Ctrl+K)" aria-label="搜索与历史"><i data-lucide="search"></i></button>
+          <button id="sidebar-toggle" class="icon-button small sidebar-toggle" type="button" title="收起侧栏" aria-controls="desktop-sidebar" aria-expanded="true">
+            <i data-lucide="panel-left-close"></i>
+          </button>
+        </div>
+
+        <nav class="ide-command-bar" aria-label="主操作">
+          <button id="new-session" class="primary-command" type="button" title="新建对话 (Ctrl+N)" disabled>
+            <i data-lucide="square-pen"></i>
+            <span>新聊天</span>
+          </button>
+        </nav>
+
+        <nav class="sidebar-nav workspace-tree-region" aria-label="工作区和对话">
+          <div class="nav-label workspace-heading">
+            <span>项目</span>
+            <button id="workspace-button" class="icon-button small" type="button" title="添加文件夹">
+              <i data-lucide="folder-plus"></i>
+            </button>
+          </div>
+          <div id="workspace-tree" class="workspace-tree">
+            <div id="workspace-list" class="workspace-list"></div>
+          </div>
+          <p id="workspace-list-empty" class="workspace-list-empty">添加一个项目，开始你的第一个任务</p>
+        </nav>
+
+        <div id="recent-sessions-list" class="recent-session-list" hidden></div>
+        <p id="recent-sessions-empty" class="recent-sessions-empty" hidden></p>
+        <div class="sidebar-footer">
+          <div id="diagnostic-panel" class="diagnostic-panel" hidden>
+            <div class="diagnostic-heading">
+              <span>后端日志</span>
+              <button id="clear-diagnostics" class="icon-button small" type="button" title="清空日志">
+                <i data-lucide="x"></i>
+              </button>
+            </div>
+            <pre id="diagnostic-text"></pre>
+          </div>
+
+          <div class="account-row">
+            <div id="status-dot" class="status-dot idle"></div>
+            <div class="account-copy">
+              <span id="status-label">未连接</span>
+              <span id="backend-label">本地后端</span>
+            </div>
+            <button id="login-button" class="icon-button" type="button" title="登录" hidden>
+              <i data-lucide="log-in"></i>
+            </button>
+          </div>
+        </div>
+        </div>
+        <div id="sidebar-more" class="sidebar-more" popover="auto" aria-label="工具与设置">
+          <p class="sidebar-menu-heading">工具与设置</p>
+          <nav class="feature-nav" aria-label="Grok 功能">
+            <button id="work-button" class="feature-button" type="button" title="自动化与任务监控" disabled><i data-lucide="activity"></i><span>任务监控</span></button>
+            <button id="extensions-button" class="feature-button" type="button" title="技能与扩展" disabled><i data-lucide="blocks"></i><span>技能与扩展</span></button>
+            <button id="models-button" class="feature-button" type="button" title="模型与 API"><i data-lucide="boxes"></i><span>模型与 API</span></button>
+            <button id="usage-button" class="feature-button" type="button" title="账号额度"><i data-lucide="gauge"></i><span>账号额度</span></button>
+            <button id="account-button" class="feature-button" type="button" title="账号与隐私"><i data-lucide="user-cog"></i><span>账号与隐私</span></button>
+            <button id="settings-button" class="feature-button" type="button" title="设置"><i data-lucide="settings"></i><span>设置</span></button>
+            <button id="background-button" class="feature-button" type="button" title="外观与主题"><i data-lucide="palette"></i><span>外观与主题</span></button>
+            <button id="show-diagnostics" class="feature-button" type="button" title="查看诊断日志"><i data-lucide="terminal"></i><span>诊断日志</span></button>
+          </nav>
+          <div class="remote-control-row">
+            <button id="remote-details" class="remote-copy" type="button" title="手机控制详情">
+              <i data-lucide="smartphone"></i>
+              <span>
+                <strong>手机控制</strong>
+                <small id="remote-status">已关闭</small>
+              </span>
+            </button>
+            <label class="switch" title="开启手机控制">
+              <input id="remote-toggle" type="checkbox" />
+              <span class="switch-track"><span class="switch-thumb"></span></span>
+            </label>
+          </div>
+        </div>
+      </aside>
+      <div id="sidebar-resize-handle" class="sidebar-resize-handle" role="separator" aria-orientation="vertical" aria-label="调整侧栏宽度"></div>
+
+      <main class="main-pane glass-surface">
+        <header class="topbar">
+          <button id="mobile-sidebar-toggle" class="icon-button mobile-sidebar-toggle" type="button" title="打开导航" aria-label="打开导航" aria-controls="desktop-sidebar" aria-expanded="false">
+            <i data-lucide="menu"></i>
+          </button>
+          <div class="topbar-title">
+            <span class="topbar-breadcrumb">工作台 <i data-lucide="chevron-right" aria-hidden="true"></i></span>
+            <span id="conversation-title">新任务</span>
+            <span id="running-indicator" hidden>处理中</span>
+          </div>
+          <div class="topbar-actions">
+            <button id="session-tools-button" class="icon-button" type="button" title="会话工具" disabled>
+              <i data-lucide="ellipsis"></i>
+            </button>
+          </div>
+        </header>
+
+        <section id="conversation" class="conversation" aria-live="polite">
+          <div id="empty-state" class="empty-state">
+            <div class="welcome-stage">
+              <div class="empty-symbol"><i data-lucide="terminal" aria-hidden="true"></i></div>
+              <p class="welcome-eyebrow">你的 AI 编程伙伴</p>
+              <h1>把想法，变成现实。</h1>
+              <p class="welcome-description">写代码、解问题，或一起探索下一个想法。</p>
+              <div class="welcome-shortcuts">
+                <button id="empty-workspace-button" class="secondary-command" type="button">
+                  <i data-lucide="folder-open"></i>
+                  打开代码目录
+                </button>
+                <button id="open-official-cli-settings" class="secondary-command compact" type="button">
+                  <i data-lucide="settings"></i>设置官方 Grok Build
+                </button>
+              </div>
+              <div id="startup-health" class="startup-health" aria-label="启动状态"></div>
+            </div>
+          </div>
+          <div id="message-list" class="message-list"></div>
+        </section>
+
+        <footer class="composer-band">
+          <button id="jump-to-latest" class="jump-to-latest" type="button" title="回到最新消息" hidden>
+            <i data-lucide="arrow-down"></i><span>回到最新</span>
+          </button>
+          <section id="prompt-queue" class="prompt-queue" aria-label="待执行指令" hidden>
+            <div class="prompt-queue-heading">
+              <strong>待执行</strong>
+              <button id="clear-prompt-queue" class="icon-button small" type="button" title="清空待执行指令">
+                <i data-lucide="trash-2"></i>
+              </button>
+            </div>
+            <div id="prompt-queue-list" class="prompt-queue-list"></div>
+          </section>
+          <section id="recover-prompt" class="recover-prompt" aria-label="已取消的指令" hidden>
+            <i data-lucide="undo-2"></i>
+            <span id="recover-prompt-label">已保留刚才取消的指令</span>
+            <button id="restore-prompt" class="secondary-command compact" type="button">恢复编辑</button>
+            <button id="dismiss-recovered-prompt" class="icon-button small" type="button" title="放弃已取消的指令"><i data-lucide="x"></i></button>
+          </section>
+          <section id="plan-approval-banner" class="plan-approval-banner" aria-label="待确认的计划" hidden>
+            <i data-lucide="clipboard-check"></i>
+            <span>有一份执行方案等待你确认</span>
+            <button id="reopen-plan-approval" class="secondary-command compact" type="button">查看计划</button>
+          </section>
+          <section id="task-status" class="task-status" role="status" aria-live="polite" hidden>
+            <span id="task-status-icon" aria-hidden="true"></span>
+            <span id="task-status-label"></span>
+          </section>
+          <form id="composer" class="composer glass-control">
+            <div id="attachment-list" class="attachment-list" hidden></div>
+            <textarea
+              id="prompt-input"
+              rows="1"
+              maxlength="100000"
+              placeholder="选择工作区后开始任务"
+              aria-label="任务内容"
+              disabled
+            ></textarea>
+            <div class="composer-toolbar">
+            <div class="composer-config-row">
+              <input id="attachment-input" type="file" multiple hidden />
+              <button id="attachment-button" class="icon-button composer-add" type="button" title="添加图片或文件（也可拖拽或粘贴）" aria-label="添加图片或文件" disabled>
+                <i data-lucide="plus"></i>
+              </button>
+              <div id="session-controls" class="session-controls" hidden>
+                <label id="permission-mode-control" class="compact-select" title="工具权限模式">
+                  <i data-lucide="shield-check"></i>
+                  <select id="permission-mode-selector" aria-label="工具权限模式">
+                    <option value="ask">每次询问</option>
+                    <option value="auto">自动判断</option>
+                    <option value="always-approve">始终允许</option>
+                  </select>
+                </label>
+              </div>
+            </div>
+            <div class="composer-actions">
+              <span id="composer-submit-mode" class="composer-submit-mode">等待工作区连接</span>
+              <button id="model-settings-button" class="model-settings-button" type="button" popovertarget="model-settings-popover" aria-controls="model-settings-popover" aria-expanded="false" title="模型与推理强度" disabled>
+                <span id="composer-model-label">选择模型</span>
+                <span class="effort-mini-bars" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+                <i data-lucide="chevron-down"></i>
+              </button>
+              <button id="cancel-queue-edit" class="icon-button" type="button" title="取消编辑待执行指令" hidden>
+                <i data-lucide="x"></i>
+              </button>
+              <button id="stop-button" class="icon-button stop" type="button" title="停止任务" hidden>
+                <i data-lucide="square"></i>
+              </button>
+              <button id="interrupt-send-button" class="icon-button interrupt-send" type="button" title="打断当前任务并发送" hidden>
+                <i data-lucide="forward"></i>
+              </button>
+              <button id="send-button" class="send-button" type="submit" title="发送" disabled>
+                <i data-lucide="arrow-up"></i>
+              </button>
+            </div>
+            </div>
+          </form>
+          <div class="composer-location"><i data-lucide="folder" aria-hidden="true"></i><span id="composer-context">未选择工作区</span></div>
+          <div class="prompt-suggestions" aria-label="试试这些任务">
+            <button type="button" data-prompt="请先梳理这个项目的目录结构、技术栈和主要功能，帮助我快速理解项目。"><i data-lucide="folder-search" aria-hidden="true"></i><span><strong>理解项目</strong><small>快速了解代码与结构</small></span><i data-lucide="arrow-up-right" aria-hidden="true"></i></button>
+            <button type="button" data-prompt="请检查当前项目的代码，找出值得改进的地方，并先给出清晰的优化建议。"><i data-lucide="code-2" aria-hidden="true"></i><span><strong>改进代码</strong><small>让代码更清晰、更可靠</small></span><i data-lucide="arrow-up-right" aria-hidden="true"></i></button>
+            <button type="button" data-prompt="请帮我排查一个问题。我会补充报错信息、复现步骤和预期结果。"><i data-lucide="bug" aria-hidden="true"></i><span><strong>排查问题</strong><small>一起找到问题的原因</small></span><i data-lucide="arrow-up-right" aria-hidden="true"></i></button>
+          </div>
+          <p class="composer-hint">Enter 发送 <span>·</span> Shift + Enter 换行</p>
+        </footer>
+      </main>
+      <button id="desktop-sidebar-backdrop" class="desktop-sidebar-backdrop" type="button" aria-label="关闭导航" hidden></button>
+    </div>
+
+    <dialog id="settings-dialog" class="modal wide-modal settings-modal">
+      <div class="workspace-modal-body">
+        <div class="modal-heading">
+          <div class="modal-icon"><i data-lucide="settings"></i></div>
+          <div><h2>设置</h2><p>管理客户端、官方 Grok Build 与本机连接</p></div>
+          <button id="close-settings-dialog" class="icon-button" type="button" title="关闭"><i data-lucide="x"></i></button>
+        </div>
+        <div class="settings-layout">
+          <nav class="settings-nav" aria-label="设置分类">
+            <button id="settings-grok-build" type="button" data-settings-section="grok-build"><i data-lucide="terminal-square"></i>Grok Build</button>
+            <button id="settings-appearance" type="button" data-settings-section="appearance"><i data-lucide="palette"></i>外观</button>
+            <button id="settings-workspaces" type="button" data-settings-section="workspaces"><i data-lucide="folders"></i>工作区</button>
+            <button id="settings-mobile" type="button" data-settings-section="mobile"><i data-lucide="smartphone"></i>手机与网络</button>
+            <button id="settings-account" type="button" data-settings-section="account"><i data-lucide="user-cog"></i>账号与隐私</button>
+            <button id="settings-advanced" type="button" data-settings-section="advanced"><i data-lucide="sliders-horizontal"></i>高级</button>
+          </nav>
+          <div class="settings-panels">
+            <section data-settings-panel="grok-build"><h3>官方 Grok Build</h3><p>选择官方 CLI、检查兼容性与安装更新。</p><button id="settings-open-cli" class="primary-command compact" type="button"><i data-lucide="terminal-square"></i>配置官方 CLI</button></section>
+            <section data-settings-panel="appearance" hidden><h3>外观</h3><p>调整主题、背景图、图像位置和头像。</p><button id="settings-open-appearance" class="secondary-command compact" type="button"><i data-lucide="image"></i>打开外观设置</button></section>
+            <section data-settings-panel="workspaces" hidden><h3>工作区</h3><p>添加或切换可由 Grok Build 访问的本地项目目录。</p><button id="settings-open-workspaces" class="secondary-command compact" type="button"><i data-lucide="folder-plus"></i>添加工作区</button></section>
+            <section data-settings-panel="mobile" hidden><h3>手机与网络</h3><p>管理手机控制、二维码、局域网与 Tailscale 连接。</p><button id="settings-open-mobile" class="secondary-command compact" type="button"><i data-lucide="smartphone"></i>打开手机控制</button></section>
+            <section data-settings-panel="account" hidden><h3>账号与隐私</h3><p>查看登录、额度、数据保留和会话共享设置。</p><button id="settings-open-account" class="secondary-command compact" type="button"><i data-lucide="user-cog"></i>打开账号与隐私</button></section>
+            <section data-settings-panel="advanced" hidden><h3>高级</h3><p>查看后端诊断信息并排查连接问题。</p><button id="settings-open-diagnostics" class="secondary-command compact" type="button"><i data-lucide="terminal"></i>查看诊断日志</button></section>
+          </div>
+        </div>
+      </div>
+    </dialog>
+
+    <dialog id="background-dialog" class="modal background-modal">
+      <div class="background-modal-body">
+        <div class="modal-heading">
+          <div class="modal-icon"><i data-lucide="image"></i></div>
+          <div>
+            <h2>外观</h2>
+            <p id="background-status">使用默认背景</p>
+          </div>
+          <button id="close-background-dialog" class="icon-button" type="button" title="关闭">
+            <i data-lucide="x"></i>
+          </button>
+        </div>
+
+        <div class="theme-section">
+          <span class="field-label">颜色主题</span>
+          <div class="theme-picker" aria-label="颜色主题">
+            <button type="button" data-theme="light" aria-pressed="true"><span aria-hidden="true"></span><i data-lucide="sun" aria-hidden="true"></i>浅色</button>
+            <button type="button" data-theme="dark" aria-pressed="false"><span aria-hidden="true"></span><i data-lucide="moon" aria-hidden="true"></i>深色</button>
+          </div>
+        </div>
+
+        <div class="avatar-section">
+          <span class="field-label">聊天头像</span>
+          <div class="avatar-settings">
+            <div class="avatar-setting">
+              <div id="user-avatar-preview" class="avatar-preview" data-role="user">你</div>
+              <div><strong>你的头像</strong><small>在电脑、手机和 iPad 共用</small></div>
+              <button class="icon-button" data-choose-avatar="user" type="button" title="选择你的头像"><i data-lucide="image-plus"></i></button>
+              <button class="icon-button" data-reset-avatar="user" type="button" title="恢复默认头像"><i data-lucide="rotate-ccw"></i></button>
+            </div>
+            <div class="avatar-setting">
+              <div id="assistant-avatar-preview" class="avatar-preview" data-role="assistant">G</div>
+              <div><strong>AI 头像</strong><small>所有模型使用同一个头像</small></div>
+              <button class="icon-button" data-choose-avatar="assistant" type="button" title="选择 AI 头像"><i data-lucide="image-plus"></i></button>
+              <button class="icon-button" data-reset-avatar="assistant" type="button" title="恢复默认头像"><i data-lucide="rotate-ccw"></i></button>
+            </div>
+          </div>
+        </div>
+
+        <button id="choose-background" class="background-preview" type="button">
+          <span><i data-lucide="image-plus"></i>选择本地图片</span>
+        </button>
+
+        <div class="background-controls">
+          <div>
+            <span class="field-label">图片位置</span>
+            <div id="position-grid" class="position-grid" aria-label="背景图片位置">
+              <button type="button" data-position="left top" title="左上"></button>
+              <button type="button" data-position="center top" title="上方"></button>
+              <button type="button" data-position="right top" title="右上"></button>
+              <button type="button" data-position="left center" title="左侧"></button>
+              <button type="button" data-position="center center" title="居中"></button>
+              <button type="button" data-position="right center" title="右侧"></button>
+              <button type="button" data-position="left bottom" title="左下"></button>
+              <button type="button" data-position="center bottom" title="下方"></button>
+              <button type="button" data-position="right bottom" title="右下"></button>
+            </div>
+          </div>
+          <div>
+            <span class="field-label">缩放方式</span>
+            <div id="background-fit" class="segmented-control">
+              <button type="button" data-fit="cover">填充</button>
+              <button type="button" data-fit="contain">适应</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-actions split">
+          <button id="reset-background" class="secondary-command" type="button">恢复默认</button>
+          <button id="done-background" class="primary-command compact" type="button">完成</button>
+        </div>
+      </div>
+    </dialog>
+
+    <dialog id="model-check-dialog" class="modal model-check-modal">
+      <div class="workspace-modal-body">
+        <div class="modal-heading">
+          <div class="modal-icon"><i data-lucide="activity"></i></div>
+          <div>
+            <h2>检测模型</h2>
+            <p id="model-check-target">选择检测方式</p>
+          </div>
+          <button id="close-model-check-dialog" class="icon-button" type="button" title="关闭"><i data-lucide="x"></i></button>
+        </div>
+        <div class="model-check-modes segmented-control" aria-label="检测方式">
+          <button id="model-check-fast" class="active" data-model-check-mode="quick" type="button">快速检测</button>
+          <button id="model-check-real" data-model-check-mode="real" type="button">真实请求</button>
+        </div>
+        <p id="model-check-credit-warning" class="model-check-warning" hidden>
+          <i data-lucide="circle-dollar-sign"></i>
+          真实请求会向该模型发送极短的测试内容，可能消耗少量额度。
+        </p>
+        <section id="model-check-result" class="model-check-result" aria-live="polite">
+          <span>快速检测只检查配置、密钥和服务连通性，不消耗模型额度。</span>
+        </section>
+        <div class="modal-actions split standalone-actions">
+          <button id="cancel-model-check" class="secondary-command" type="button">取消</button>
+          <button id="run-model-check" class="primary-command compact" type="button"><i data-lucide="activity"></i>开始检测</button>
+        </div>
+      </div>
+    </dialog>
+
+    <dialog id="session-tools-dialog" class="modal wide-modal">
+      <div class="workspace-modal-body">
+        <div class="modal-heading">
+          <div class="modal-icon"><i data-lucide="sliders-horizontal"></i></div>
+          <div>
+            <h2>会话工具</h2>
+            <p id="session-info-summary">查看当前会话状态和上下文</p>
+          </div>
+          <button id="close-session-tools" class="icon-button" type="button" title="关闭"><i data-lucide="x"></i></button>
+        </div>
+
+        <div id="session-info-grid" class="metric-grid session-metrics">
+          <div><span>模型</span><strong id="session-info-model">--</strong></div>
+          <div><span>对话轮次</span><strong id="session-info-turns">--</strong></div>
+          <div><span>上下文</span><strong id="session-info-context">--</strong></div>
+          <div><span>API 后端</span><strong id="session-info-backend">--</strong></div>
+        </div>
+
+        <section class="tool-section">
+          <div class="section-heading"><div><strong>上下文与记忆</strong><span>长会话可以手动压缩或刷新长期记忆</span></div></div>
+          <textarea id="compact-context" rows="2" maxlength="1000" placeholder="可选：说明压缩时必须保留的信息"></textarea>
+          <div class="inline-actions">
+            <button id="flush-memory" class="secondary-command" type="button"><i data-lucide="brain"></i>刷新记忆</button>
+            <button id="compact-session" class="primary-command compact" type="button"><i data-lucide="archive"></i>压缩上下文</button>
+          </div>
+        </section>
+
+        <section class="tool-section">
+          <div class="section-heading">
+            <div><strong>回退会话</strong><span>恢复到某次提问之前的对话或文件状态</span></div>
+            <button id="load-rewind-points" class="secondary-command compact-button" type="button"><i data-lucide="rotate-ccw"></i>查看回退点</button>
+          </div>
+          <label id="rewind-mode-row" class="rewind-mode-row" hidden>
+            <span>回退范围</span>
+            <select id="rewind-mode"><option value="all">对话和文件</option><option value="conversation_only">仅对话</option><option value="files_only">仅文件</option></select>
+          </label>
+          <div id="rewind-state" class="list-state" hidden></div>
+          <div id="rewind-list" class="resource-list compact-list"></div>
+        </section>
+      </div>
+    </dialog>
+
+    <dialog id="sessions-dialog" class="modal wide-modal">
+      <div class="workspace-modal-body">
+        <div class="modal-heading">
+          <div class="modal-icon"><i data-lucide="history"></i></div>
+          <div>
+            <h2>历史会话</h2>
+            <p>恢复当前工作区以前保存的任务</p>
+          </div>
+          <button id="close-sessions-dialog" class="icon-button" type="button" title="关闭">
+            <i data-lucide="x"></i>
+          </button>
+        </div>
+        <label class="search-field">
+          <i data-lucide="search"></i>
+          <input id="session-search" type="search" placeholder="搜索标题或对话内容" autocomplete="off" />
+        </label>
+        <div id="sessions-state" class="list-state">连接工作区后可查看历史会话</div>
+        <div id="sessions-list" class="resource-list"></div>
+      </div>
+    </dialog>
+
+    <dialog id="usage-dialog" class="modal usage-modal">
+      <div class="workspace-modal-body">
+        <div class="modal-heading">
+          <div class="modal-icon"><i data-lucide="gauge"></i></div>
+          <div>
+            <h2>Grok 额度</h2>
+            <p id="usage-tier">登录 Grok 后查询账号额度</p>
+          </div>
+          <button id="close-usage-dialog" class="icon-button" type="button" title="关闭">
+            <i data-lucide="x"></i>
+          </button>
+        </div>
+        <div id="usage-content" class="usage-content" hidden>
+          <div class="usage-summary">
+            <div>
+              <span id="usage-period-label">本期额度</span>
+              <strong id="usage-percent">0%</strong>
+            </div>
+            <span id="usage-reset">重置时间未知</span>
+          </div>
+          <div class="usage-track"><span id="usage-track-fill"></span></div>
+          <div class="metric-grid">
+            <div><span>预付余额</span><strong id="usage-prepaid">--</strong></div>
+            <div><span>按量付费</span><strong id="usage-demand">未启用</strong></div>
+          </div>
+        </div>
+        <div id="usage-state" class="list-state">尚未查询</div>
+        <details id="usage-error-details" class="error-details" hidden><summary>查看技术详情</summary><pre id="usage-error-text"></pre></details>
+        <div class="modal-actions split standalone-actions">
+          <button id="manage-billing" class="secondary-command" type="button">
+            <i data-lucide="external-link"></i>管理账单
+          </button>
+          <button id="refresh-usage" class="primary-command compact" type="button">
+            <i data-lucide="refresh-cw"></i>刷新额度
+          </button>
+        </div>
+      </div>
+    </dialog>
+
+    <dialog id="models-dialog" class="modal model-modal">
+      <div class="workspace-modal-body">
+        <div class="modal-heading">
+          <div class="modal-icon"><i data-lucide="boxes"></i></div>
+          <div>
+            <h2>模型与 API</h2>
+            <p>Grok 登录与第三方 API 可以同时使用</p>
+          </div>
+          <button id="close-models-dialog" class="icon-button" type="button" title="关闭">
+            <i data-lucide="x"></i>
+          </button>
+        </div>
+
+        <section class="model-section">
+          <div class="section-heading">
+            <div><strong>API 供应商</strong><span>一个供应商可以添加多个模型，密钥由 Windows 加密保存</span></div>
+            <button id="new-provider" class="secondary-command compact-button" type="button">
+              <i data-lucide="plus"></i>供应商
+            </button>
+          </div>
+          <div id="provider-list" class="provider-list"></div>
+          <div id="provider-empty" class="list-state">尚未添加 API 供应商</div>
+        </section>
+
+        <form id="provider-form" class="model-form" hidden>
+          <input id="provider-id" type="hidden" />
+          <div class="form-heading"><strong id="provider-form-title">添加供应商</strong></div>
+          <div class="form-grid">
+            <label><span>供应商名称</span><input id="provider-name" required maxlength="80" placeholder="OpenAI" /></label>
+            <label><span>默认接口协议</span><select id="provider-backend"><option value="chat_completions">OpenAI Chat Completions</option><option value="responses">OpenAI Responses</option><option value="messages">Anthropic Messages</option></select></label>
+            <label class="span-2"><span>API 地址</span><input id="provider-base-url" type="url" required placeholder="https://api.openai.com/v1" /></label>
+            <label class="span-2"><span>API Key</span><input id="provider-api-key" type="password" autocomplete="new-password" placeholder="编辑时留空可保留现有密钥" /></label>
+            <label id="provider-clear-key-row" class="checkbox-row span-2" hidden><input id="provider-clear-key" type="checkbox" /><span>清除已保存的 API Key</span></label>
+          </div>
+          <div class="modal-actions split standalone-actions">
+            <button id="cancel-provider" class="secondary-command" type="button">取消</button>
+            <button class="primary-command compact" type="submit">保存供应商</button>
+          </div>
+        </form>
+
+        <form id="provider-model-form" class="model-form" hidden>
+          <input id="model-provider-id" type="hidden" />
+          <input id="model-original-id" type="hidden" />
+          <div class="form-heading"><strong id="model-form-title">添加模型</strong><span id="model-provider-name"></span></div>
+          <div class="form-grid">
+            <label class="span-2"><span>模型名称</span><input id="provider-model-name" required maxlength="160" placeholder="gpt-5.6-sol" /></label>
+          </div>
+          <details class="advanced-settings">
+            <summary><i data-lucide="settings-2"></i>高级设置</summary>
+            <div class="form-grid">
+              <label><span>模型标识</span><input id="provider-model-value" maxlength="160" placeholder="默认与模型名称相同" /></label>
+              <label><span>配置 ID</span><input id="provider-model-id" required maxlength="64" placeholder="openai-gpt-4o" /></label>
+              <label><span>接口协议</span><select id="provider-model-backend"><option value="">继承供应商设置</option><option value="chat_completions">OpenAI Chat Completions</option><option value="responses">OpenAI Responses</option><option value="messages">Anthropic Messages</option></select></label>
+              <label><span>上下文长度</span><input id="provider-model-context" type="number" min="1024" max="10000000" placeholder="128000" /></label>
+              <label><span>最大输出</span><input id="provider-model-max-output" type="number" min="1" max="1000000" placeholder="8192" /></label>
+              <label><span>Temperature</span><input id="provider-model-temperature" type="number" min="0" max="2" step="0.1" placeholder="0.7" /></label>
+              <label><span>Top P</span><input id="provider-model-top-p" type="number" min="0" max="1" step="0.05" placeholder="0.95" /></label>
+            </div>
+          </details>
+          <p class="form-note">可以继续添加其他模型，完成后统一应用配置。</p>
+          <div class="modal-actions split standalone-actions">
+            <button id="cancel-provider-model" class="secondary-command" type="button">取消</button>
+            <button class="primary-command compact" type="submit">保存模型</button>
+          </div>
+        </form>
+        <div class="model-apply-bar">
+          <span id="model-config-state">配置已应用</span>
+          <button id="apply-model-config" class="primary-command compact" type="button" disabled>
+            <i data-lucide="refresh-cw"></i>应用并刷新
+          </button>
+        </div>
+      </div>
+    </dialog>
+
+    <dialog id="model-conflict-dialog" class="modal">
+      <div class="workspace-modal-body">
+        <div class="modal-heading">
+          <div class="modal-icon"><i data-lucide="git-compare-arrows"></i></div>
+          <div>
+            <h2>模型配置冲突</h2>
+            <p id="model-conflict-description"></p>
+          </div>
+          <button id="close-model-conflict" class="icon-button" type="button" title="关闭"><i data-lucide="x"></i></button>
+        </div>
+        <p class="form-note">使用客户端配置前会自动备份 config.toml。</p>
+        <div class="conflict-actions">
+          <button id="keep-manual-model" class="secondary-command" type="button">保留手写配置</button>
+          <button id="rename-client-model" class="secondary-command" type="button">自动改名</button>
+          <button id="use-client-model" class="primary-command compact" type="button">使用客户端配置</button>
+        </div>
+      </div>
+    </dialog>
+
+    <dialog id="extensions-dialog" class="modal extensions-modal">
+      <div class="workspace-modal-body">
+        <div class="modal-heading">
+          <div class="modal-icon"><i data-lucide="blocks"></i></div>
+          <div>
+            <h2>扩展管理</h2>
+            <p>管理 CLI 后端加载的 MCP、技能、插件和 Hooks</p>
+          </div>
+          <button id="close-extensions-dialog" class="icon-button" type="button" title="关闭"><i data-lucide="x"></i></button>
+        </div>
+
+        <div id="extensions-tabs" class="tab-bar" role="tablist">
+          <button class="active" type="button" data-extension-tab="mcp">MCP</button>
+          <button type="button" data-extension-tab="skills">技能</button>
+          <button type="button" data-extension-tab="plugins">插件</button>
+          <button type="button" data-extension-tab="marketplace">插件市场</button>
+          <button type="button" data-extension-tab="hooks">Hooks</button>
+        </div>
+
+        <section class="extension-panel active" data-extension-panel="mcp">
+          <div class="extension-toolbar">
+            <span id="mcp-summary">读取 MCP 服务</span>
+            <button id="refresh-mcp" class="icon-button small" type="button" title="刷新 MCP"><i data-lucide="refresh-cw"></i></button>
+          </div>
+          <div id="mcp-state" class="list-state">尚未加载</div>
+          <div id="mcp-list" class="resource-list extension-list"></div>
+          <form id="mcp-form" class="inline-resource-form">
+            <select id="mcp-type" aria-label="MCP 类型"><option value="stdio">本地命令</option><option value="http">HTTP</option></select>
+            <input id="mcp-name" required maxlength="120" placeholder="服务名称" />
+            <input id="mcp-endpoint" required maxlength="2048" placeholder="启动命令" />
+            <input id="mcp-args" maxlength="2048" placeholder="参数，用空格分隔" />
+            <button class="primary-command compact" type="submit"><i data-lucide="plus"></i>添加</button>
+          </form>
+        </section>
+
+        <section class="extension-panel" data-extension-panel="skills" hidden>
+          <div class="extension-toolbar"><span id="skills-summary">读取技能</span><button id="refresh-skills" class="icon-button small" type="button" title="刷新技能"><i data-lucide="refresh-cw"></i></button></div>
+          <div id="skills-state" class="list-state">尚未加载</div>
+          <div id="skills-list" class="resource-list extension-list"></div>
+          <form id="skill-form" class="inline-resource-form simple">
+            <input id="skill-path" required maxlength="2048" placeholder="技能目录或 SKILL.md 路径" />
+            <button class="primary-command compact" type="submit"><i data-lucide="folder-plus"></i>添加路径</button>
+          </form>
+        </section>
+
+        <section class="extension-panel" data-extension-panel="plugins" hidden>
+          <div class="extension-toolbar"><span id="plugins-summary">读取已安装插件</span><button id="refresh-plugins" class="icon-button small" type="button" title="刷新插件"><i data-lucide="refresh-cw"></i></button></div>
+          <div id="plugins-state" class="list-state">尚未加载</div>
+          <div id="plugins-list" class="resource-list extension-list"></div>
+          <form id="plugin-form" class="inline-resource-form simple">
+            <input id="plugin-path" required maxlength="2048" placeholder="本地插件目录" />
+            <button class="primary-command compact" type="submit"><i data-lucide="folder-plus"></i>添加插件</button>
+          </form>
+        </section>
+
+        <section class="extension-panel" data-extension-panel="marketplace" hidden>
+          <div class="extension-toolbar"><span id="marketplace-summary">浏览插件源</span><button id="refresh-marketplace" class="icon-button small" type="button" title="刷新插件市场"><i data-lucide="refresh-cw"></i></button></div>
+          <div id="marketplace-state" class="list-state">尚未加载</div>
+          <div id="marketplace-list" class="resource-list extension-list"></div>
+          <form id="marketplace-form" class="inline-resource-form simple">
+            <input id="marketplace-url" required maxlength="2048" placeholder="Git 插件市场地址" />
+            <button class="primary-command compact" type="submit"><i data-lucide="plus"></i>添加来源</button>
+          </form>
+        </section>
+
+        <section class="extension-panel" data-extension-panel="hooks" hidden>
+          <div class="extension-toolbar">
+            <span id="hooks-summary">读取 Hooks</span>
+            <div class="toolbar-actions"><button id="toggle-hook-trust" class="secondary-command compact-button" type="button">信任项目 Hooks</button><button id="refresh-hooks" class="icon-button small" type="button" title="刷新 Hooks"><i data-lucide="refresh-cw"></i></button></div>
+          </div>
+          <div id="hooks-state" class="list-state">尚未加载</div>
+          <div id="hooks-list" class="resource-list extension-list"></div>
+          <form id="hook-form" class="inline-resource-form simple">
+            <input id="hook-path" required maxlength="2048" placeholder="Hook 配置文件或目录" />
+            <button class="primary-command compact" type="submit"><i data-lucide="folder-plus"></i>添加路径</button>
+          </form>
+        </section>
+      </div>
+    </dialog>
+
+    <dialog id="work-dialog" class="modal wide-modal">
+      <div class="workspace-modal-body">
+        <div class="modal-heading">
+          <div class="modal-icon"><i data-lucide="activity"></i></div>
+          <div><h2>任务监控</h2><p id="work-summary">后台命令与子代理</p></div>
+          <button id="close-work-dialog" class="icon-button" type="button" title="关闭"><i data-lucide="x"></i></button>
+        </div>
+        <div class="extension-toolbar work-toolbar">
+          <div class="status-legend"><span><i class="status-pip running"></i>运行中</span><span><i class="status-pip done"></i>已完成</span></div>
+          <button id="refresh-work" class="icon-button small" type="button" title="刷新任务"><i data-lucide="refresh-cw"></i></button>
+        </div>
+        <div id="work-state" class="list-state">尚未读取任务</div>
+        <div id="work-list" class="resource-list work-list"></div>
+      </div>
+    </dialog>
+
+    <dialog id="account-dialog" class="modal wide-modal">
+      <div class="workspace-modal-body">
+        <div class="modal-heading">
+          <div class="modal-icon"><i data-lucide="user-cog"></i></div>
+          <div><h2>账号与隐私</h2><p id="account-summary">Grok 登录状态与当前会话</p></div>
+          <button id="close-account-dialog" class="icon-button" type="button" title="关闭"><i data-lucide="x"></i></button>
+        </div>
+        <div class="metric-grid account-metrics">
+          <div><span>登录账号</span><strong id="account-email">--</strong></div>
+          <div><span>团队</span><strong id="account-team">--</strong></div>
+        </div>
+        <section class="settings-row">
+          <div><strong>不保留编码数据</strong><span>将隐私选择同步到当前 Grok 账号</span></div>
+          <label class="switch" title="切换编码数据保留"><input id="retention-opt-out" type="checkbox" /><span class="switch-track"><span class="switch-thumb"></span></span></label>
+        </section>
+        <section class="tool-section official-cli-section">
+          <div class="section-heading"><div><strong>官方 Grok Build</strong><span id="official-cli-status">正在检测本机 CLI</span></div></div>
+          <div class="metric-grid compact-metrics">
+            <div><span>可执行文件</span><strong id="official-cli-path">未选择</strong></div>
+            <div><span>版本</span><strong id="official-cli-version">--</strong></div>
+          </div>
+          <div id="official-cli-update-state" class="list-state">使用官方 CLI 的 ACP 接口连接。</div>
+          <div class="inline-actions wrap-actions">
+            <button id="choose-official-cli" class="secondary-command compact" type="button"><i data-lucide="folder-open"></i>选择官方 CLI</button>
+            <button id="test-official-cli" class="secondary-command compact" type="button"><i data-lucide="activity"></i>检测连接</button>
+            <button id="check-official-cli-update" class="secondary-command compact" type="button"><i data-lucide="refresh-cw"></i>检查更新</button>
+            <button id="install-official-cli-update" class="primary-command compact" type="button" disabled><i data-lucide="download"></i>立即更新</button>
+            <button id="official-cli-install-guide" class="icon-button" type="button" title="打开官方安装页面"><i data-lucide="external-link"></i></button>
+          </div>
+        </section>
+        <section class="tool-section">
+          <div class="section-heading"><div><strong>项目规则</strong><span id="project-rules-path">工作区根目录 AGENTS.md</span></div></div>
+          <textarea id="project-rules" rows="4" maxlength="1048576" placeholder="输入项目编码规范、构建命令和约束"></textarea>
+          <div class="inline-actions"><button id="save-project-rules" class="primary-command compact" type="button"><i data-lucide="save"></i>保存规则</button></div>
+        </section>
+        <section class="tool-section">
+          <div class="section-heading">
+            <div><strong>提示历史</strong><span>当前工作区最近发送的任务</span></div>
+            <button id="refresh-prompt-history" class="icon-button small" type="button" title="刷新提示历史"><i data-lucide="refresh-cw"></i></button>
+          </div>
+          <div id="prompt-history-state" class="list-state">尚未读取</div>
+          <div id="prompt-history-list" class="resource-list compact-list"></div>
+        </section>
+        <div class="modal-actions split standalone-actions account-actions">
+          <button id="logout-account" class="danger-command" type="button"><i data-lucide="log-out"></i>退出 Grok</button>
+          <button id="share-session" class="primary-command compact" type="button"><i data-lucide="share-2"></i>分享当前会话</button>
+        </div>
+      </div>
+    </dialog>
+
+    <dialog id="official-cli-update-dialog" class="modal">
+      <div class="modal-body">
+        <div class="modal-icon"><i data-lucide="download"></i></div>
+        <div class="modal-copy"><h2>更新官方 Grok Build</h2><p id="official-cli-update-description">更新将停止当前连接，完成后需要重新连接。</p></div>
+        <div class="modal-actions split"><button id="cancel-official-cli-update" class="secondary-command" type="button">取消</button><button id="confirm-official-cli-update" class="primary-command" type="button">确认更新</button></div>
+      </div>
+    </dialog>
+
+    <dialog id="remote-dialog" class="modal remote-modal">
+      <div class="remote-modal-body">
+        <div class="modal-heading">
+          <div class="modal-icon"><i data-lucide="smartphone"></i></div>
+          <div>
+            <h2>手机控制</h2>
+            <p id="remote-client-count">等待手机连接</p>
+          </div>
+          <button id="close-remote-dialog" class="icon-button" type="button" title="关闭">
+            <i data-lucide="x"></i>
+          </button>
+        </div>
+
+        <div class="pair-layout">
+          <div class="qr-frame"><img id="remote-qr" alt="手机配对二维码" /></div>
+          <div class="pair-copy">
+            <span class="field-label">配对码</span>
+            <strong id="remote-code" class="pair-code">------</strong>
+            <label class="field-label" for="remote-address">连接地址</label>
+            <select id="remote-address" class="remote-address-select"></select>
+            <div class="copy-field">
+              <span id="remote-url"></span>
+              <button id="copy-remote-url" class="icon-button small" type="button" title="复制地址">
+                <i data-lucide="copy"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="security-strip">
+          <i data-lucide="shield-check"></i>
+          <span>仅在可信局域网使用，不要将此端口映射到公网。</span>
+        </div>
+
+        <div class="modal-actions split">
+          <button id="refresh-pairing" class="secondary-command" type="button">
+            <i data-lucide="refresh-cw"></i>
+            刷新配对码
+          </button>
+          <button id="disable-remote" class="danger-command" type="button">关闭手机控制</button>
+        </div>
+      </div>
+    </dialog>
+
+    <dialog id="permission-dialog" class="modal">
+      <form method="dialog" class="modal-body">
+        <div class="modal-icon warning"><i data-lucide="shield-alert"></i></div>
+        <div class="modal-copy">
+          <h2>需要你的确认</h2>
+          <span id="permission-risk" class="permission-risk">需要确认</span>
+          <p id="permission-target"></p>
+          <p id="permission-description" class="permission-status">请选择允许范围</p>
+          <details id="permission-details" class="permission-details">
+            <summary>查看具体操作</summary>
+            <pre id="permission-command"></pre>
+          </details>
+        </div>
+        <div id="permission-options" class="modal-actions"></div>
+      </form>
+    </dialog>
+
+    <dialog id="trust-dialog" class="modal">
+      <form method="dialog" class="modal-body">
+        <div class="modal-icon"><i data-lucide="folder-check"></i></div>
+        <div class="modal-copy">
+          <h2>信任此工作区？</h2>
+          <p id="trust-description"></p>
+          <div id="trust-kinds" class="tag-row"></div>
+        </div>
+        <div class="modal-actions split">
+          <button id="reject-trust" class="secondary-command" value="cancel" type="button">暂不信任</button>
+          <button id="accept-trust" class="primary-command compact" value="default" type="button">信任工作区</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="plan-approval-dialog" class="modal plan-approval-modal">
+      <form method="dialog" class="modal-form plan-approval-body">
+        <div class="plan-approval-header">
+          <div class="plan-approval-heading">
+            <p class="eyebrow">计划审批</p>
+            <h2>确认下一步执行方案</h2>
+            <p id="plan-approval-session" class="plan-approval-session"></p>
+          </div>
+          <button id="defer-plan" class="icon-button" type="button" title="稍后处理">
+            <i data-lucide="x"></i>
+          </button>
+        </div>
+        <article id="plan-approval-content" class="plan-approval-content"></article>
+        <label class="field-label" for="plan-approval-feedback">修改意见</label>
+        <textarea id="plan-approval-feedback" rows="2" placeholder="说明需要调整的内容后再点「提出修改意见」"></textarea>
+        <p id="plan-approval-status" class="permission-status"></p>
+        <div class="plan-approval-actions">
+          <button id="abandon-plan" class="danger-command" type="button">放弃计划</button>
+          <button id="revise-plan" class="secondary-command" type="button" disabled>提出修改意见</button>
+          <button id="approve-plan" class="primary-command compact" type="button">批准并执行</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="auth-dialog" class="modal">
+      <form method="dialog" class="modal-body">
+        <div class="modal-icon"><i data-lucide="key-round"></i></div>
+        <div class="modal-copy">
+          <h2>登录 Grok</h2>
+          <label class="field-label" for="auth-method">登录方式</label>
+          <select id="auth-method"></select>
+          <p id="auth-description"></p>
+        </div>
+        <div class="modal-actions split">
+          <button class="secondary-command" value="cancel" type="submit">取消</button>
+          <button id="authenticate-button" class="primary-command compact" value="default" type="button">继续</button>
+        </div>
+      </form>
+    </dialog>
+
+    <div id="model-settings-popover" class="model-settings-popover" popover="auto" role="dialog" aria-label="模型与推理强度">
+      <div class="model-panel-heading"><i data-lucide="zap" aria-hidden="true"></i><span>模型与推理强度</span><span class="effort-max-badge"><i data-lucide="sparkles" aria-hidden="true"></i>最高强度</span></div>
+      <label class="model-panel-select"><i data-lucide="cpu" aria-hidden="true"></i><select id="model-selector" aria-label="当前模型" autofocus></select></label>
+      <div id="effort-control" class="effort-slider-control" hidden>
+        <div class="effort-slider-heading"><label for="effort-selector">推理强度</label><output id="effort-value" for="effort-selector"></output></div>
+        <div class="effort-slider-track"><div class="effort-slider-fill" aria-hidden="true"></div><div id="effort-ticks" class="effort-ticks" aria-hidden="true"></div><input id="effort-selector" type="range" min="0" max="0" value="0" step="1" aria-label="推理强度" /></div>
+        <div class="effort-slider-labels"><span id="effort-min-label"></span><span id="effort-max-label"></span></div>
+      </div>
+      <label id="mode-control" class="model-panel-select" hidden><i data-lucide="shield-check" aria-hidden="true"></i><select id="mode-selector" aria-label="运行模式"></select></label>
+    </div>
+
+    <div id="workspace-menu" class="workspace-context-menu" popover="auto" aria-label="项目选项">
+      <button id="workspace-menu-remove" type="button" autofocus><i data-lucide="folder-minus"></i><span>从列表移除项目</span></button>
+    </div>
+
+    <script src="../../node_modules/marked/marked.min.js"></script>
+    <script src="../../node_modules/dompurify/dist/purify.min.js"></script>
+    <script src="../../node_modules/lucide/dist/umd/lucide.min.js"></script>
+    <script src="../tool-presentation.js"></script>
+    <script src="../attachment-ingest.js"></script>
+    <script src="../reasoning-effort-policy.js"></script>
+    <script src="../ux-policy.js"></script>
+    <script src="../markdown-display.js"></script>
+    <script src="../layout-policy.js"></script>
+    <script src="renderer.js"></script>
+  </body>
+</html>

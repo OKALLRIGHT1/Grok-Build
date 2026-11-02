@@ -1,0 +1,17 @@
+{
+  "name": "Grok Remote",
+  "short_name": "Grok",
+  "description": "Local network controller for Grok Build",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fafaf8",
+  "theme_color": "#fafaf8",
+  "icons": [
+    {
+      "src": "/icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+/target
+**/*.rs.bk
+.DS_Store
+
+# Local assistant state and credentials
+/.agents/
+/.superpowers/
+.env
+.env.*
+!.env.example
+!.env.template
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+__pycache__/
+*.pyc

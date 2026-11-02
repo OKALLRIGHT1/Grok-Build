@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#fafaf8" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <title>Grok Remote</title>
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="icon" href="/icon.png" />
+    <link rel="apple-touch-icon" href="/icon.png" />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="wallpaper" aria-hidden="true"></div>
+
+    <main id="pair-view" class="pair-view">
+      <section class="glass-panel pair-panel">
+        <div class="app-mark">G</div>
+        <div>
+          <p class="eyebrow">Grok Remote</p>
+          <h1>连接到电脑</h1>
+        </div>
+        <form id="pair-form">
+          <p class="pair-description">在电脑端打开「手机控制」，输入显示的六位配对码。</p>
+          <label for="pair-code">六位配对码</label>
+          <input id="pair-code" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code" placeholder="000000" required />
+          <button id="pair-button" class="primary-button" type="submit">
+            <i data-lucide="link"></i>
+            连接电脑
+          </button>
+        </form>
+        <p id="pair-error" class="error-text" hidden></p>
+        <p class="security-note"><i data-lucide="shield-check"></i> 仅连接可信局域网中的电脑</p>
+      </section>
+    </main>
+
+    <main id="app-view" class="app-view left-open" data-conversation-layout="welcome" hidden>
+      <header class="mobile-header glass-panel">
+        <div class="header-copy">
+          <span id="connection-dot" class="connection-dot"></span>
+          <div>
+            <strong id="workspace-name">未选择工作区</strong>
+            <span id="connection-label">正在连接</span>
+          </div>
+        </div>
+        <div class="header-actions">
+          <button id="sessions" class="icon-button" type="button" title="切换对话" aria-controls="navigation-panel" aria-expanded="false">
+            <i data-lucide="messages-square"></i>
+          </button>
+          <button id="controls" class="icon-button" type="button" title="控制面板" aria-controls="controls-panel" aria-expanded="false">
+            <i data-lucide="sliders-horizontal"></i>
+          </button>
+          <button id="new-session" class="icon-button" type="button" title="新建任务">
+            <i data-lucide="square-pen"></i>
+          </button>
+        </div>
+      </header>
+
+      <div id="workspace-shell" class="workspace-shell">
+        <aside id="navigation-panel" class="side-panel navigation-panel glass-panel" aria-label="工作区与会话" aria-hidden="true">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">工作区与会话</p>
+              <strong id="navigation-workspace">未选择工作区</strong>
+            </div>
+            <button id="close-navigation" class="icon-button panel-toggle" type="button" title="收起会话栏" aria-label="收起会话栏">
+              <i data-lucide="panel-left-close"></i>
+            </button>
+          </div>
+          <div class="panel-body navigation-body">
+            <button id="panel-new-session" class="secondary-button full" type="button">
+              <i data-lucide="square-pen"></i>
+              新建对话
+            </button>
+            <div id="mobile-sessions" class="mobile-resource-list session-groups"></div>
+            <button id="mobile-refresh-sessions" class="secondary-button full" type="button">
+              <i data-lucide="refresh-cw"></i>
+              刷新会话
+            </button>
+          </div>
+        </aside>
+
+        <section class="chat-column" aria-label="当前对话">
+          <div id="mobile-sync-status" class="mobile-sync-status" role="status" hidden>
+            <span>正在同步完整对话</span>
+            <button id="mobile-retry-sync" class="text-button" type="button" hidden>重新同步</button>
+          </div>
+          <section id="conversation" class="conversation" aria-live="polite">
+            <div id="empty-state" class="empty-state glass-panel">
+              <div class="empty-icon"><i data-lucide="terminal" aria-hidden="true"></i></div>
+              <p class="welcome-eyebrow">随时随地，继续创造</p>
+              <h2>你的工作台，随身带。</h2>
+              <p class="mobile-welcome-description">描述你的想法，让电脑上的 Grok 帮你完成。</p>
+              <p id="empty-workspace">等待电脑选择工作区</p>
+            </div>
+            <div id="message-list" class="message-list"></div>
+          </section>
+
+          <footer class="composer-wrap">
+            <button id="mobile-jump-to-latest" class="jump-to-latest" type="button" title="回到最新消息" hidden>
+              <i data-lucide="arrow-down"></i><span>回到最新</span>
+            </button>
+            <section id="mobile-prompt-queue" class="mobile-prompt-queue glass-panel" aria-label="待执行指令" hidden>
+              <div class="mobile-queue-heading">
+                <strong>待执行</strong>
+                <button id="mobile-clear-queue" class="icon-button queue-icon" type="button" title="清空待执行指令"><i data-lucide="trash-2"></i></button>
+              </div>
+              <div id="mobile-prompt-queue-list" class="mobile-prompt-queue-list"></div>
+            </section>
+            <section id="mobile-recover-prompt" class="recover-prompt glass-panel" aria-label="已取消的指令" hidden>
+              <i data-lucide="undo-2"></i>
+              <span id="mobile-recover-prompt-label">已保留刚才取消的指令</span>
+              <button id="mobile-restore-prompt" type="button">恢复编辑</button>
+              <button id="mobile-dismiss-recovered-prompt" class="icon-button" type="button" title="放弃已取消的指令"><i data-lucide="x"></i></button>
+            </section>
+            <section id="mobile-plan-approval-banner" class="plan-approval-banner glass-panel" aria-label="待确认的计划" hidden>
+              <i data-lucide="clipboard-check"></i>
+              <span>有一份执行方案等待你确认</span>
+              <button id="mobile-reopen-plan-approval" type="button">查看计划</button>
+            </section>
+            <section id="mobile-task-status" class="task-status glass-panel" role="status" aria-live="polite" hidden>
+              <span id="mobile-task-status-icon" aria-hidden="true"></span>
+              <span id="mobile-task-status-label"></span>
+            </section>
+            <form id="composer" class="composer glass-panel">
+              <div id="attachment-list" class="attachment-list" hidden></div>
+              <textarea id="prompt" rows="1" maxlength="100000" placeholder="描述你想完成的任务…" aria-label="任务内容" disabled></textarea>
+              <div class="composer-row">
+                <span id="task-state">电脑未就绪</span>
+                <span id="mobile-composer-submit-mode" class="composer-submit-mode">等待电脑连接</span>
+                <input id="attachment-input" type="file" multiple hidden />
+                <button id="mobile-cancel-queue-edit" class="icon-button" type="button" title="取消编辑待执行指令" hidden>
+                  <i data-lucide="x"></i>
+                </button>
+                <button id="attachment-button" class="icon-button" type="button" title="添加图片或文件" disabled>
+                  <i data-lucide="paperclip"></i>
+                </button>
+                <button id="stop" class="stop-button" type="button" title="停止任务" hidden>
+                  <i data-lucide="square"></i>
+                </button>
+                <button id="mobile-interrupt-send" class="stop-button" type="button" title="打断当前任务并发送" hidden>
+                  <i data-lucide="forward"></i>
+                </button>
+                <button id="send" class="send-button" type="submit" title="发送" disabled>
+                  <i data-lucide="arrow-up"></i>
+                </button>
+              </div>
+            </form>
+          </footer>
+        </section>
+
+        <aside id="controls-panel" class="side-panel controls-panel glass-panel" aria-label="模型与任务控制" aria-hidden="true">
+          <div class="panel-heading">
+            <div><p class="eyebrow">电脑控制</p><strong id="controls-status">当前会话</strong></div>
+            <button id="close-controls" class="icon-button panel-toggle" type="button" title="收起控制栏" aria-label="收起控制栏">
+              <i data-lucide="panel-right-close"></i>
+            </button>
+          </div>
+          <div class="panel-body controls-body">
+            <label class="control-field"><span>模型</span><select id="mobile-model"></select></label>
+            <label id="mobile-mode-row" class="control-field"><span>运行模式</span><select id="mobile-mode"></select></label>
+            <div class="control-tabs">
+              <button class="active" type="button" data-control-tab="usage">额度</button>
+              <button type="button" data-control-tab="work">任务</button>
+            </div>
+            <section data-control-panel="usage">
+              <div id="mobile-usage" class="mobile-resource-state">点击刷新读取 Grok 额度</div>
+              <button id="mobile-refresh-usage" class="secondary-button full" type="button"><i data-lucide="refresh-cw"></i>刷新额度</button>
+            </section>
+            <section data-control-panel="work" hidden>
+              <div id="mobile-work" class="mobile-resource-list"></div>
+              <button id="mobile-refresh-work" class="secondary-button full" type="button"><i data-lucide="refresh-cw"></i>刷新任务</button>
+            </section>
+            <button id="disconnect" class="secondary-button full disconnect-button" type="button"><i data-lucide="log-out" aria-hidden="true"></i>断开电脑连接</button>
+          </div>
+        </aside>
+      </div>
+      <button id="panel-backdrop" class="panel-backdrop" type="button" aria-label="关闭侧栏" hidden></button>
+    </main>
+
+    <dialog id="permission-dialog" class="modal">
+      <div class="modal-content">
+        <div class="modal-icon warning"><i data-lucide="shield-alert"></i></div>
+        <h2>需要确认</h2>
+        <span id="mobile-permission-risk" class="permission-risk">需要确认</span>
+        <p id="mobile-permission-target"></p>
+        <p id="permission-description" class="permission-status">请选择允许范围</p>
+        <details id="mobile-permission-details" class="permission-details">
+          <summary>查看具体操作</summary>
+          <pre id="permission-command"></pre>
+        </details>
+        <div id="permission-options" class="modal-actions"></div>
+      </div>
+    </dialog>
+
+    <dialog id="trust-dialog" class="modal">
+      <div class="modal-content">
+        <div class="modal-icon"><i data-lucide="folder-check"></i></div>
+        <h2>信任此工作区？</h2>
+        <p id="trust-description"></p>
+        <div id="trust-kinds" class="tag-row"></div>
+        <div class="modal-actions split">
+          <button id="reject-trust" class="secondary-button" type="button">暂不信任</button>
+          <button id="accept-trust" class="primary-button" type="button">信任</button>
+        </div>
+      </div>
+    </dialog>
+
+    <dialog id="mobile-plan-approval-dialog" class="modal mobile-plan-approval-modal">
+      <div class="modal-content mobile-plan-approval-content">
+        <div class="plan-approval-header">
+          <div>
+            <p class="eyebrow">计划审批</p>
+            <h2>确认下一步执行方案</h2>
+            <p id="mobile-plan-approval-session" class="plan-approval-session"></p>
+          </div>
+          <button id="mobile-defer-plan" class="icon-button" type="button" title="稍后处理">
+            <i data-lucide="x"></i>
+          </button>
+        </div>
+        <article id="mobile-plan-approval-content" class="plan-approval-content"></article>
+        <label class="field-label" for="mobile-plan-approval-feedback">修改意见</label>
+        <textarea id="mobile-plan-approval-feedback" rows="2" placeholder="说明需要调整的内容后再点「提出修改意见」"></textarea>
+        <p id="mobile-plan-approval-status" class="permission-status"></p>
+        <div class="modal-actions mobile-plan-approval-actions">
+          <button id="mobile-abandon-plan" class="danger-button" type="button">放弃计划</button>
+          <button id="mobile-revise-plan" class="secondary-button" type="button" disabled>提出修改意见</button>
+          <button id="mobile-approve-plan" class="primary-button" type="button">批准并执行</button>
+        </div>
+      </div>
+    </dialog>
+
+    <script src="/vendor/marked.js"></script>
+    <script src="/vendor/dompurify.js"></script>
+    <script src="/vendor/lucide.js"></script>
+    <script src="/tool-presentation.js"></script>
+    <script src="/attachment-ingest.js"></script>
+    <script src="/mobile-layout.js"></script>
+    <script src="/mobile-session-sync-policy.js"></script>
+    <script src="/ux-policy.js"></script>
+    <script src="/markdown-display.js"></script>
+    <script src="/layout-policy.js"></script>
+    <script src="/app.js"></script>
+  </body>
+</html>
