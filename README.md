@@ -3,6 +3,37 @@
 基于本机官方 Grok Build CLI 的社区 Windows 桌面客户端，当前版本为 **0.1.17**。
 桌面端通过 ACP 调用独立安装的官方 CLI，支持项目会话、浅色与深色主题、图片和文件附件，以及手机网页遥控。
 
+## 下载
+
+Windows x64 可直接下载安装版或便携版：
+
+| 版本 | 下载 | 使用方式 |
+| --- | --- | --- |
+| 安装版 | [Grok-Build-Setup-0.1.17-x64.exe](https://github.com/OKALLRIGHT1/Grok-Build/releases/download/v0.1.17/Grok-Build-Setup-0.1.17-x64.exe) | 安装到电脑，创建桌面和开始菜单快捷方式 |
+| 便携版 | [Grok-Build-Portable-0.1.17-x64.exe](https://github.com/OKALLRIGHT1/Grok-Build/releases/download/v0.1.17/Grok-Build-Portable-0.1.17-x64.exe) | 下载后直接运行 |
+
+[完整发布说明](https://github.com/OKALLRIGHT1/Grok-Build/releases/tag/v0.1.17) · [SHA-256 校验文件](https://github.com/OKALLRIGHT1/Grok-Build/releases/download/v0.1.17/SHA256SUMS.txt)
+
+两个版本均需要本机已安装[官方 Grok Build CLI](https://x.ai/cli)。首次使用时，客户端会尝试查找本机 CLI，也可以在设置中选择 `grok.exe`。
+
+## 界面预览
+
+以下为客户端实际渲染截图，项目与会话使用演示数据。
+
+### 浅色主题
+
+项目与对话集中在左侧，主区域提供任务输入、附件、权限和模型入口。
+
+![Grok Build Desktop 浅色主题主页](docs/images/desktop-light.png)
+
+### 深色主题与推理强度
+
+模型与推理强度在同一个面板中调整；不同级别使用渐变颜色，最高级别显示流光效果。
+
+![Grok Build Desktop 深色主题与推理强度面板](docs/images/desktop-dark.png)
+
+## 从源码运行
+
 使用 Node.js 22.12 或更新版本，并先安装官方 Grok Build CLI：
 
 ```powershell
